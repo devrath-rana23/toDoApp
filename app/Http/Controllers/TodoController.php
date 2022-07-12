@@ -1,0 +1,90 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Todo;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
+
+class TodoController extends Controller
+{
+    public function index()
+    {
+
+        $todos = Todo::all();
+        return view('index', compact('todos'));
+    }
+    public function create()
+    {
+        return view('create');
+    }
+    public function details(Todo $todo)
+    {
+
+        return view('details')->with('todos', $todo);
+    }
+
+    public function edit($id)
+    {
+        $todos = Todo::find($id);
+        return view('edit',compact('todos'));
+    }
+    public function update(Todo $todo)
+    {
+
+        try {
+            $this->validate(request(), [
+                'name' => ['required'],
+                'description' => ['required'],
+
+            ]);
+        } catch (ValidationException $e) {
+            echo $e;
+        }
+
+        $data = request()->all();
+
+
+        $todo->name = $data['name'];
+        $todo->description = $data['description'];
+        $todo->save();
+
+        session()->flash('success', 'Todo updated successfully');
+
+        return redirect('/');
+    }
+    public function delete(Todo $todo)
+    {
+
+        $todo->delete();
+
+        return redirect('/');
+    }
+
+    public function store()
+    {
+
+
+        try {
+            $this->validate(request(), [
+                'name' => ['required'],
+                'description' => ['required']
+            ]);
+        } catch (ValidationException $e) {
+            echo $e;
+        }
+
+
+        $data = request()->all();
+
+
+        $todo = new Todo();
+        $todo->name = $data['name'];
+        $todo->description = $data['description'];
+        $todo->save();
+
+        session()->flash('success', 'Todo created succesfully');
+
+        return redirect('/');
+    }
+}
